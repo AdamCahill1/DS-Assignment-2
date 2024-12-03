@@ -33,6 +33,9 @@ export const handler: SQSHandler = async (event: any) => {
         const srcBucket = s3e.bucket.name;
         // Object key may have spaces or unicode non-ASCII characters.
         const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
+
+
+        
         try {
           const { name, email, message }: ContactDetails = {
             name: "The Photo Album",

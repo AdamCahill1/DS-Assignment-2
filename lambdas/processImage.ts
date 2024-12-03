@@ -7,8 +7,11 @@ import {
   S3Client,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
+import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
 const s3 = new S3Client();
+const ddbDocClient = createDDbDocClient();
 
 export const handler: SQSHandler = async (event) => {
   console.log("Event ", JSON.stringify(event));
@@ -23,14 +26,38 @@ export const handler: SQSHandler = async (event) => {
         const srcBucket = s3e.bucket.name;
         // Object key may have spaces or unicode non-ASCII characters.
         const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
-        let origimage = null;
+
+        const imageTypeMatch = srcKey.match(/\.([^.]*)$/);
+        if (!imageTypeMatch) {
+            console.log("Could not find the image type.");
+            throw new Error("Could not find the image type.");
+        }
+
+        const imageType = imageTypeMatch[1].toLowerCase();
+        if (imageType !== "jpeg" && imageType !== "png") {
+          console.log(`Unsupported image type: ${imageType}`);
+          throw new Error(`Unsupported image type: ${imageType}`);
+        }
+
         try {
           // Download the image from the S3 source bucket.
           const params: GetObjectCommandInput = {
             Bucket: srcBucket,
             Key: srcKey,
           };
-          origimage = await s3.send(new GetObjectCommand(params));
+          const origimage = await s3.send(new GetObjectCommand(params));
+
+          const commandOutput = await ddbDocClient.send(
+            new PutCommand({
+              TableName: process.env.TABLE_NAME,
+              Item: {
+                Name: srcKey,
+                //ImageType: imageType,
+              },
+            })
+          );
+
+
           // Process the image ......
         } catch (error) {
           console.log(error);
@@ -39,3 +66,17 @@ export const handler: SQSHandler = async (event) => {
     }
   }
 };
+
+function createDDbDocClient() {
+  const ddbClient = new DynamoDBClient({ region: process.env.REGION });
+  const marshallOptions = {
+    convertEmptyValues: true,
+    removeUndefinedValues: true,
+    convertClassInstanceToMap: true,
+  };
+  const unmarshallOptions = {
+    wrapNumbers: false,
+  };
+  const translateConfig = { marshallOptions, unmarshallOptions };
+  return DynamoDBDocumentClient.from(ddbClient, translateConfig);
+}
