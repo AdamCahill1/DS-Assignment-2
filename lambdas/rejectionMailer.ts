@@ -1,4 +1,4 @@
-import { SNSHandler } from "aws-lambda";
+import { SQSHandler } from "aws-lambda";
 import { SES_EMAIL_FROM, SES_EMAIL_TO, SES_REGION } from "../env";
 import {
   SESClient,
@@ -23,7 +23,7 @@ type ContactDetails = {
 
 const client = new SESClient({ region: SES_REGION});
 
-export const handler: SNSHandler = async (event: any) => {
+export const handler: SQSHandler = async (event: any) => {
   console.log("Event ", JSON.stringify(event));
   for (const record of event.Records) {
     const recordBody = JSON.parse(record.body);
@@ -36,16 +36,13 @@ export const handler: SNSHandler = async (event: any) => {
         const srcBucket = s3e.bucket.name;
         // Object key may have spaces or unicode non-ASCII characters.
         const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
-
-
-
         try {
           const supportedImaeg = isImageCorrect(srcKey)
-          if (supportedImaeg){
+          if (!supportedImaeg){
             const { name, email, message }: ContactDetails = {
               name: "The Photo Album",
               email: SES_EMAIL_FROM,
-              message: `We received your Image. Its URL is s3://${srcBucket}/${srcKey}`,
+              message: `We received your incorrect Image. Its URL is s3://${srcBucket}/${srcKey}`,
             };
             const params = sendEmailParams({ name, email, message });
             await client.send(new SendEmailCommand(params));
@@ -58,6 +55,7 @@ export const handler: SNSHandler = async (event: any) => {
     }
   }
 };
+
 
 function sendEmailParams({ name, email, message }: ContactDetails) {
   const parameters: SendEmailCommandInput = {

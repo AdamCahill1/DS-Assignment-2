@@ -7,6 +7,9 @@ import {
   S3Client,
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
+import {
+  isImageCorrect
+} from "./utils";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient, PutCommand } from "@aws-sdk/lib-dynamodb";
 
@@ -27,16 +30,10 @@ export const handler: SQSHandler = async (event) => {
         // Object key may have spaces or unicode non-ASCII characters.
         const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
 
-        const imageTypeMatch = srcKey.match(/\.([^.]*)$/);
-        if (!imageTypeMatch) {
-            console.log("Could not find the image type.");
-            throw new Error("Could not find the image type.");
-        }
-
-        const imageType = imageTypeMatch[1].toLowerCase();
-        if (imageType !== "jpeg" && imageType !== "png") {
-          console.log(`Unsupported image type: ${imageType}`);
-          throw new Error(`Unsupported image type: ${imageType}`);
+        const supportedImaeg = isImageCorrect(srcKey);
+        if (!supportedImaeg){
+          console.log(`Unsupported image type: ${srcKey.endsWith}`);
+          throw new Error(`Unsupported image type: ${srcKey.endsWith}`);
         }
 
         try {
