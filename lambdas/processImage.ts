@@ -18,51 +18,46 @@ const ddbDocClient = createDDbDocClient();
 
 export const handler: SQSHandler = async (event) => {
   console.log("Event ", JSON.stringify(event));
-  for (const record of event.Records) {
-    const recordBody = JSON.parse(record.body);        // Parse SQS message
-    const snsMessage = JSON.parse(recordBody.Message); // Parse SNS message
-
-    if (snsMessage.Records) {
-      console.log("Record body ", JSON.stringify(snsMessage));
-      for (const messageRecord of snsMessage.Records) {
-        const s3e = messageRecord.s3;
-        const srcBucket = s3e.bucket.name;
-        // Object key may have spaces or unicode non-ASCII characters.
-        const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
-
-        const supportedImaeg = isImageCorrect(srcKey);
-        if (!supportedImaeg){
-          console.log(`Unsupported image type: ${srcKey.endsWith}`);
-          throw new Error(`Unsupported image type: ${srcKey.endsWith}`);
-        }
-
-        try {
-          // Download the image from the S3 source bucket.
-          const params: GetObjectCommandInput = {
-            Bucket: srcBucket,
-            Key: srcKey,
-          };
-          const origimage = await s3.send(new GetObjectCommand(params));
-
-          const commandOutput = await ddbDocClient.send(
-            new PutCommand({
-              TableName: process.env.TABLE_NAME,
-              Item: {
-                Name: srcKey,
-                //ImageType: imageType,
-              },
-            })
-          );
+  try {
+    for (const record of event.Records) {
+      const recordBody = JSON.parse(record.body);        // Parse SQS message
+      const snsMessage = JSON.parse(recordBody.Message); // Parse SNS message
+      
+      if (snsMessage.Records) {
+        console.log("Record body ", JSON.stringify(snsMessage));
+        for (const messageRecord of snsMessage.Records) {
+          const s3e = messageRecord.s3;
+          const srcBucket = s3e.bucket.name;
+          const srcKey = decodeURIComponent(s3e.object.key.replace(/\+/g, " "));
 
 
-          // Process the image ......
-        } catch (error) {
-          console.log(error);
+          const supportedImage = isImageCorrect(srcKey);
+          if (!supportedImage) {
+            console.log(`Unsupported file detected: ${srcKey}`);
+            throw new Error(`Unsupported image type: ${srcKey}`);
+          }
+
+          try {
+            const commandOutput = await ddbDocClient.send(
+              new PutCommand({
+                TableName: process.env.TABLE_NAME,
+                Item: {
+                  imageName: srcKey,
+                },
+              })
+            );
+            console.log("DynamoDB write successful:", commandOutput);
+          } catch (error) {
+            console.log("Error writing to DynamoDB:", error);
+          }
         }
       }
     }
+  } catch (error) {
+    console.log("Error processing record:", error);
   }
 };
+
 
 function createDDbDocClient() {
   const ddbClient = new DynamoDBClient({ region: process.env.REGION });

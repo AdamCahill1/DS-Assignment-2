@@ -8,6 +8,7 @@ import {
 import {
   isImageCorrect
 } from "./utils";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 if (!SES_EMAIL_TO || !SES_EMAIL_FROM || !SES_REGION) {
   throw new Error(
@@ -22,6 +23,7 @@ type ContactDetails = {
 };
 
 const client = new SESClient({ region: SES_REGION});
+const s3Client = new S3Client();  
 
 export const handler: SQSHandler = async (event: any) => {
   console.log("Event ", JSON.stringify(event));
@@ -45,7 +47,9 @@ export const handler: SQSHandler = async (event: any) => {
               message: `We received your incorrect Image. Its URL is s3://${srcBucket}/${srcKey}`,
             };
             const params = sendEmailParams({ name, email, message });
-            await client.send(new SendEmailCommand(params));
+            await client.send(new SendEmailCommand(params));       
+              
+            await s3Client.send(new DeleteObjectCommand({Bucket: srcBucket, Key: srcKey}));
           }
         } catch (error: unknown) {
           console.log("ERROR is: ", error);
