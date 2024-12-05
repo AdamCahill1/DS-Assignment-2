@@ -55,6 +55,7 @@ export const handler: SQSHandler = async (event) => {
     }
   } catch (error) {
     console.log("Error processing record:", error);
+    throw error;
   }
 };
 
