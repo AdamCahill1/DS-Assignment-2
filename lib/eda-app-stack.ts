@@ -118,20 +118,20 @@ export class EDAAppStack extends cdk.Stack {
       new s3n.SnsDestination(newImageTopic)
     );
     
-
-    newImageTopic.addSubscription(
-      new subs.LambdaSubscription(confirmationMailerFn, {
-        filterPolicyWithMessageBody: {  
-          Records: sns.FilterOrPolicy.policy({
-            eventName: sns.FilterOrPolicy.filter(
-              sns.SubscriptionFilter.stringFilter({
-                allowlist: ["ObjectCreated:Put"], 
-              })
-            ),
-          }),
-        },
-      })
-    );
+        //Subscribed straight to the topic
+    // newImageTopic.addSubscription(
+    //   new subs.LambdaSubscription(confirmationMailerFn, {
+    //     filterPolicyWithMessageBody: {  
+    //       Records: sns.FilterOrPolicy.policy({
+    //         eventName: sns.FilterOrPolicy.filter(
+    //           sns.SubscriptionFilter.stringFilter({
+    //             allowlist: ["ObjectCreated:Put"], 
+    //           })
+    //         ),
+    //       }),
+    //     },
+    //   })
+    // );
     
 
     newImageTopic.addSubscription(

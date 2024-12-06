@@ -12,9 +12,10 @@ __YouTube Demo link__ - [The URL of the video demonstration of the app.]
 
 e.g.
 
-+ Confirmation Mailer - Fully implemented.
-+ Rejection Mailer - Partially working. The Lambda is triggered at the correct times, but the emails are not being received.
-+ Log Image -  Fully implemented. 
++ Confirmation Mailer - Fully implemented and working.
++ Rejection Mailer - Fully implemented and working.
++ Log Image -  Fully implemented and working. 
++ Queue and DLQ -  Fully implemented and working. 
 
 ### Phase 2 (if relevant).
 
@@ -22,10 +23,11 @@ e.g.
 
 e.g.
 
-+ Confirmation Mailer - Partially working. The lambda is triggered too often. The image metadata messages are not being filtered out as required.
-+ Rejection Mailer - Fully implemented 
-+ Log Image - Fully implemented 
-+ Update Table -  Fully implemented.
++ Confirmation Mailer - Fully implemented and working.
++ Rejection Mailer - Fully implemented and working. 
++ Log Image - Fully implemented and working. 
++ Update Table/Image Metadata -  Fully implemented and working. 
++ Filters -  Fully implemented and working. 
 
 ### Phase 3 (if relevant).
 
@@ -33,10 +35,11 @@ e.g.
 
 e.g.
 
-+ Confirmation Mailer - Not implemented.
-+ Process Image - Fully implemented.
-+ Update Table - Fully implemented.
-+ etc
-+ etc
++ Confirmation Mailer(Triggered when Item is added to the database) - Fully implemented and working. 
++ Process Image - Fully implemented and working. 
++ Log Image - Fully implemented and working. 
++ Update Table/Image Metadata -  Fully implemented and working. 
++ Delete Image - Fully implemented and working. 
++ Filters -  Fully implemented and working. 
 
 
