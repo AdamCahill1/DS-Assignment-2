@@ -44,7 +44,7 @@ export const handler: SQSHandler = async (event: any) => {
             const { name, email, message }: ContactDetails = {
               name: "The Photo Album",
               email: SES_EMAIL_FROM,
-              message: `We received your incorrect Image. Its URL is s3://${srcBucket}/${srcKey}`,
+              message: `We received your Image but it has been rejected as it is not a valid format. Please upload a jpg/jpeg or a png formatted image. `,
             };
             const params = sendEmailParams({ name, email, message });
             await client.send(new SendEmailCommand(params));       
