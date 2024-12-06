@@ -25,28 +25,33 @@ const client = new SESClient({ region: SES_REGION});
 
 export const handler: DynamoDBStreamHandler  = async (event: any) => {
   console.log("Event ", JSON.stringify(event));
-  for (const record of event.Records) {
-    const newImage = record.dynamodb?.NewImage;
-    if (newImage) {
-      const imageName = newImage.imageName;
-      const bucketName = newImage.bucketName;
+  try {
+    for (const record of event.Records) {
+      const newImage = record.dynamodb?.NewImage;
+      if (newImage) {
+        const imageName = newImage.imageName?.S; 
+        const bucketName = newImage.bucketName?.S; 
 
-      try {
-        const supportedImaeg = isImageCorrect(imageName)
-        if (supportedImaeg){
-          const { name, email, message }: ContactDetails = {
-            name: "The Photo Album",
-            email: SES_EMAIL_FROM,
-            message: `We received your Image. Its URL is s3://${bucketName}/${imageName}`,
-          };
-          const params = sendEmailParams({ name, email, message });
-          await client.send(new SendEmailCommand(params));
+        try {
+          const supportedImaeg = isImageCorrect(imageName)
+          if (supportedImaeg){
+            const { name, email, message }: ContactDetails = {
+              name: "The Photo Album",
+              email: SES_EMAIL_FROM,
+              message: `We received your Image. Its URL is s3://${bucketName}/${imageName}`,
+            };
+            const params = sendEmailParams({ name, email, message });
+            await client.send(new SendEmailCommand(params));
+          }
+        } catch (error: unknown) {
+          console.log("ERROR is: ", error);
+
         }
-      } catch (error: unknown) {
-        console.log("ERROR is: ", error);
-
       }
     }
+  } catch (error: unknown) {
+    console.log("ERROR is: ", error);
+
   }
 };
 
