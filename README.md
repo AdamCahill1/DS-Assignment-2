@@ -2,7 +2,7 @@
 
 __Name:__ Adam Cahill
 
-__YouTube Demo link__ - [The URL of the video demonstration of the app.]
+__YouTube Demo link__ - https://youtu.be/ti6kUGppVR4
 
 [ Note: The video must include an audio.]
 
@@ -35,7 +35,7 @@ e.g.
 
 e.g.
 
-+ Confirmation Mailer(Triggered when Item is added to the database) - Fully implemented and working. 
++ Confirmation Mailer(Triggered when Item is added to the database) - Fully implemented and working. May send email when an object is deleted from the database. (Missing if statement in the confirmation mailer/ mailer.ts to check for eventName)
 + Process Image - Fully implemented and working. 
 + Log Image - Fully implemented and working. 
 + Update Table/Image Metadata -  Fully implemented and working. 
